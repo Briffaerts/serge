@@ -238,5 +238,18 @@ setInterval(() => {
 [47] : routine_PositionServo<br>
 </div>
 
+
+<script>
+let compteur = 0;
+setInterval(() => {
+  if (compteur % 2 === 0) {
+    envoyerCommande("[3]");
+  } else {
+    envoyerCommande("[41]");
+  }
+  compteur++;
+}, 5000); // Toutes les 5 secondes
+</script>
+
 </body>
 </html>
