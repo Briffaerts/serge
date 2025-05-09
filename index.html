@@ -99,12 +99,18 @@
 
 
 
+
+
+
 <script defer>
 function envoyerCommande(cmd) {
   fetch('https://sergebriffaerts.alwaysdata.net/ecrire_commande.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'cmd=' + encodeURIComponent(cmd)
+  }).then(() => {
+    const cible = document.getElementById("envoye");
+    if (cible) cible.innerText = "Chaîne envoyée : " + cmd;
   });
 }
 
