@@ -139,7 +139,7 @@ function toggleAide() {
 }
 
 setInterval(() => {
-  fetch("https://sergebriffaerts.alwaysdata.net/etat.txt")
+  fetch("https://sergebriffaerts.alwaysdata.net/etat.php")
     .then(response => response.text())
     .then(data => {
       const cible = document.getElementById("reponse");
