@@ -190,6 +190,11 @@ function envoyerCommandeLibre() {
   if (val) envoyerCommande("[" + val + "]");
 }
 
+function envoyerServo() {
+  const val = document.getElementById("valeurServo").value;
+  if (val) envoyerCommande("[31/" + val + "]");
+}
+
 setInterval(() => {
   fetch("https://sergebriffaerts.alwaysdata.net/etat.txt")
     .then(response => response.text())
