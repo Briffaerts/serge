@@ -1,3 +1,4 @@
+C
 <!DOCTYPE html>
 
 <html lang="fr">
@@ -145,6 +146,10 @@
   [47] : routine_EnvoyerCommandeMoteur<br/>
   [999] : routine_TestMemoire<br/>
 </div>
+<div class="flex-row" style="gap: 10px; margin-top: 15px;">
+  <button onclick="envoyerCommande('[3]')">🌡 Lire Température</button>
+  <button onclick="envoyerCommande('[41]')">📏 Lire Distance</button>
+</div>
 <div class="flex-row"><div class="data-box"><input id="commande" placeholder="1/Hello/World" type="text"/><button onclick="envoyerCommandeLibre()">Envoyer</button></div><div class="data-box"><input id="angleServo" max="180" min="0" placeholder="Angle 0-180" type="number"/><button onclick="envoyerServo()">Positionner Servo</button></div></div><div class="flex-row" style="gap: 10px;"><button onclick="envoyerCommande('[021/7/1]')">🔌 Sortie 7 ON</button><button onclick="envoyerCommande('[021/7/0]')">⚡ Sortie 7 OFF</button><button onclick="toggleAide()">❔ Aide</button></div><div id="reponse">En attente de réponse...</div>
 <div class="label">Chaîne envoyée</div>
 <div id="chaineEnvoyee">Aucune commande encore envoyée.</div>
@@ -153,10 +158,31 @@
     function envoyerCommande(cmd) {
       document.getElementById("chaineEnvoyee").innerText = "Envoyée : " + cmd;
 
-      fetch("http://192.168.0.50/" + cmd)
+      fetch("https://sergebriffaerts.alwaysdata.net/ecrire_commande.php?cmd=" + encodeURIComponent(cmd))
         .then(response => response.text())
         .then(data => {
           document.getElementById("reponse").innerText = "Réponse Arduino : " + data;
+
+          fetch("https://sergebriffaerts.alwaysdata.net/etat.php")
+            .then(r => r.text())
+            .then(dataArduino => {
+              const match = dataArduino.match(/<([\d.]+)\|([\d.]+)>/);
+              if (match) {
+                const temp = parseFloat(match[1]).toFixed(1);
+                const hum = parseFloat(match[2]).toFixed(1);
+                document.getElementById("tempAff").innerText = temp;
+                document.getElementById("barTemp").style.width = (temp / 50 * 100) + "%";
+                document.getElementById("humAff").innerText = hum;
+                document.getElementById("barHum").style.width = hum + "%";
+              }
+
+              const matchDist = dataArduino.match(/^<(\d+)>$/);
+              if (matchDist) {
+                document.getElementById("distAff").innerText = matchDist[1];
+                document.getElementById("barDist").style.width = Math.min(100, (parseInt(matchDist[1]) / 400) * 100) + "%";
+              }
+            });
+        
 
           const match = data.match(/<([\d.]+)\|([\d.]+)>/);
           if (match) {
@@ -189,8 +215,6 @@
       setTimeout(() => { envoyerCommande('[41]'); }, 2500);
     }
 
-    lectureSequence();
-    setInterval(lectureSequence, 5000);
   
   function toggleAide() {
     const aide = document.getElementById("aide");
@@ -229,36 +253,5 @@ function envoyerServo() {
 [47] : routine_PositionServo<br>
 </div>
 
-
-<script>
-function envoyerCommande() {
-  const champ = document.getElementById("commandeManuelle");
-  const valeur = champ.value.trim();
-  if (valeur.length > 0) {
-    envoyerTexte(valeur);
-  }
-}
-
-function envoyerTexte(texte) {
-  document.getElementById("commandeEnvoyee").innerText = "Commande envoyée : " + texte;
-  fetch("https://sergebriffaerts.alwaysdata.net/ecrire_commande.php", {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: texte
-  })
-  .then(r => r.text())
-  .then(data => console.log("Réponse serveur :", data))
-  .catch(e => console.error("Erreur fetch :", e));
-}
-
-function lireEtat() {
-  fetch("https://sergebriffaerts.alwaysdata.net/etat.txt")
-    .then(r => r.text())
-    .then(txt => console.log("État Arduino :", txt))
-    .catch(e => console.error("Erreur état :", e));
-}
-
-setInterval(lireEtat, 10000);
-</script>
 </body>
 </html>
