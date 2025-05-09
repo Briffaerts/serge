@@ -176,6 +176,9 @@
 
 
 
+
+
+
 <script>
 function envoyerCommande(cmd) {
   fetch('https://sergebriffaerts.alwaysdata.net/ecrire_commande.php', {
@@ -193,6 +196,15 @@ function envoyerCommandeLibre() {
 function envoyerServo() {
   const val = document.getElementById("valeurServo").value;
   if (val) envoyerCommande("[31/" + val + "]");
+}
+
+function toggleAide() {
+  const aide = document.getElementById("aide");
+  if (aide.style.display === "none") {
+    aide.style.display = "block";
+  } else {
+    aide.style.display = "none";
+  }
 }
 
 setInterval(() => {
