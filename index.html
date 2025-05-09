@@ -95,6 +95,45 @@
       .data-box { margin: 10px 0; }
     }
   </style>
+
+<script defer>
+function envoyerCommande(cmd) {
+  fetch('https://sergebriffaerts.alwaysdata.net/ecrire_commande.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'cmd=' + encodeURIComponent(cmd)
+  });
+}
+
+function envoyerCommandeLibre() {
+  const val = document.getElementById("commande").value;
+  if (val) envoyerCommande("[" + val + "]");
+}
+
+function envoyerServo() {
+  const val = document.getElementById("valeurServo").value;
+  if (val) envoyerCommande("[31/" + val + "]");
+}
+
+function toggleAide() {
+  const aide = document.getElementById("aide");
+  if (aide.style.display === "none") {
+    aide.style.display = "block";
+  } else {
+    aide.style.display = "none";
+  }
+}
+
+setInterval(() => {
+  fetch("https://sergebriffaerts.alwaysdata.net/etat.txt")
+    .then(response => response.text())
+    .then(data => {
+      const cible = document.getElementById("reponse");
+      if (cible) cible.innerText = "Réponse Arduino : " + data;
+    });
+}, 1000);
+</script>
+
 </head>
 <body>
 <h1>Contrôle Arduino</h1>
@@ -145,7 +184,8 @@
   [47] : routine_EnvoyerCommandeMoteur<br/>
   [999] : routine_TestMemoire<br/>
 </div>
-<div class="flex-row"><div class="data-box"><input id="commande" placeholder="1/Hello/World" type="text"/><button onclick="envoyerCommandeLibre()">Envoyer</button></div><div class="data-box"><input id="angleServo" max="180" min="0" placeholder="Angle 0-180" type="number"/><button onclick="envoyerServo()">Positionner Servo</button></div></div><div class="flex-row" style="gap: 10px;"><button onclick="envoyerCommande('[021/7/1]')">🔌 Sortie 7 ON</button><button onclick="envoyerCommande('[021/7/0]')">⚡ Sortie 7 OFF</button><button onclick="toggleAide()">❔ Aide</button></div><div id="reponse">En attente de réponse...</div>
+<div class="flex-row"><div class="data-box"><input id="commande" placeholder="1/Hello/World" type="text"/><button onclick="envoyerCommandeLibre()">Envoyer</button></div><div class="data-box"><input id="angleServo" max="180" min="0" placeholder="Angle 0-180" type="number"/><input type="number" id="valeurServo" min="0" max="180" value="90" style="width:60px; margin-right:5px;">
+<button onclick="envoyerServo()">Positionner Servo</button></div></div><div class="flex-row" style="gap: 10px;"><button onclick="envoyerCommande('[021/7/1]')">🔌 Sortie 7 ON</button><button onclick="envoyerCommande('[021/7/0]')">⚡ Sortie 7 OFF</button><button onclick="toggleAide()">❔ Aide</button></div><div id="reponse">En attente de réponse...</div>
 <div class="label">Chaîne envoyée</div>
 <div id="chaineEnvoyee">Aucune commande encore envoyée.</div>
 </div>
@@ -174,47 +214,6 @@
 
 
 
-
-
-
-
-
-<script>
-function envoyerCommande(cmd) {
-  fetch('https://sergebriffaerts.alwaysdata.net/ecrire_commande.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'cmd=' + encodeURIComponent(cmd)
-  });
-}
-
-function envoyerCommandeLibre() {
-  const val = document.getElementById("commande").value;
-  if (val) envoyerCommande("[" + val + "]");
-}
-
-function envoyerServo() {
-  const val = document.getElementById("valeurServo").value;
-  if (val) envoyerCommande("[31/" + val + "]");
-}
-
-function toggleAide() {
-  const aide = document.getElementById("aide");
-  if (aide.style.display === "none") {
-    aide.style.display = "block";
-  } else {
-    aide.style.display = "none";
-  }
-}
-
-setInterval(() => {
-  fetch("https://sergebriffaerts.alwaysdata.net/etat.txt")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("reponse").innerText = "Réponse Arduino : " + data;
-    });
-}, 1000);
-</script>
 
 </body>
 </html>
