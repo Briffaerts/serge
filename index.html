@@ -151,5 +151,53 @@
 </div>
 
 
+<div id="listeAide" style="display: none;">
+[0] : routine_UP<br>
+[1] : routine_EcrireLCD<br>
+[2] : routine_10_20<br>
+[3] : routine_LireTempHum<br>
+[4] : routine_MessageComplexe<br>
+[5] : routine_OK<br>
+[6] : routine_Pin7On<br>
+[7] : routine_EchoParams<br>
+[20] : routine_LirePin<br>
+[21] : routine_EcrirePin<br>
+[22] : routine_LirePinsMultiples<br>
+[23] : routine_EcrirePinsMultiples<br>
+[30] : routine_AfficherDeuxLignes<br>
+[32] : routine_JouerMelodie<br>
+[999] : routine_TestMemoire<br>
+[41] : routine_LireDistanceUltra<br>
+[42] : routine_MesureCycle<br>
+[47] : routine_PositionServo<br>
+</div>
+
+
+
+
+
+<script>
+function envoyerCommande(cmd) {
+  fetch('https://sergebriffaerts.alwaysdata.net/ecrire_commande.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'cmd=' + encodeURIComponent(cmd)
+  });
+}
+
+function envoyerCommandeLibre() {
+  const val = document.getElementById("commande").value;
+  if (val) envoyerCommande("[" + val + "]");
+}
+
+setInterval(() => {
+  fetch("https://sergebriffaerts.alwaysdata.net/etat.txt")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("reponse").innerText = "Réponse Arduino : " + data;
+    });
+}, 1000);
+</script>
+
 </body>
 </html>
