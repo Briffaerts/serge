@@ -149,65 +149,59 @@
   <button onclick="envoyerCommande('[3]')">🌡 Lire Température</button>
   <button onclick="envoyerCommande('[41]')">📏 Lire Distance</button>
 </div>
-<div class="flex-row"><div class="data-box"><input id="commande" placeholder="1/Hello/World" type="text"/><button onclick="envoyerCommandeLibre()">Envoyer</button></div><div class="data-box"><input id="angleServo" max="180" min="0" placeholder="Angle 0-180" type="number"/><button onclick="envoyerServo()">Positionner Servo</button></div></div><div class="flex-row" style="gap: 10px;"><button onclick="envoyerCommande('[021/7/1]')">🔌 Sortie 7 ON</button><button onclick="envoyerCommande('[021/7/0]')">⚡ Sortie 7 OFF</button><button onclick="toggleAide()">❔ Aide</button></div><div id="reponse">En attente de réponse...</div>
-<div class="label">Chaîne envoyée</div>
+<div class="flex-row"><div class="data-box"><input id="commande" placeholder="1/Hello/World" type="text"/><button onclick="envoyerCommandeLibre()">Envoyer</button></div><div class="data-box"><input id="angleServo" max="180" min="0" placeholder="Angle 0-180" type="number"/><button onclick="envoyerServo()">Positionner Servo</button></div></div><div class="flex-row" style="gap: 10px;"><button onclick="envoyerCommande('[021/7/1]')">🔌 Sortie 7 ON</button><button onclick="envoyerCommande('[021/7/0]')">⚡ Sortie 7 OFF</button><button onclick="toggleAide()">❔ Aide</button></div><div class="label">Chaîne envoyée</div>
 <div id="chaineEnvoyee">Aucune commande encore envoyée.</div>
 </div>
 <script>
-    function envoyerCommande(cmd) {
-      document.getElementById("chaineEnvoyee").innerText = "Envoyée : " + cmd;
+    
 
-      fetch("http://192.168.0.50/" + cmd)
-        .then(response => response.text())
-        .then(data => {
-          document.getElementById("reponse").innerText = "Réponse Arduino : " + data;
+let verrouCommande = false;
 
-          const match = data.match(/<([\d.]+)\|([\d.]+)>/);
-          if (match) {
-            const temp = parseFloat(match[1]).toFixed(1);
-            const hum = parseFloat(match[2]).toFixed(1);
-            document.getElementById("tempAff").innerText = temp;
-            document.getElementById("barTemp").style.width = (temp / 50 * 100) + "%";
-            document.getElementById("humAff").innerText = hum;
-            document.getElementById("barHum").style.width = hum + "%";
-          }
+function envoyerCommande(cmd) {
+  if (verrouCommande) return;
 
-          const matchDist = data.match(/^<(\d+)>$/);
-          if (matchDist) {
-            document.getElementById("distAff").innerText = matchDist[1];
-            document.getElementById("barDist").style.width = Math.min(100, (parseInt(matchDist[1]) / 400) * 100) + "%";
-          }
-        })
-        .catch(error => {
-          document.getElementById("reponse").innerText = "Erreur de communication avec Arduino.";
-        });
-    }
+  verrouCommande = true;
+  const now = new Date();
+  const heure = now.toLocaleTimeString();
+  const zone = document.getElementById("chaineEnvoyee");
+  zone.innerText = "Commande en cours à " + heure + " : " + cmd;
 
-    function envoyerCommandeLibre() {
-      const cmd = document.getElementById("commande").value;
-      envoyerCommande("[" + cmd + "]");
-    }
+  const boutons = document.querySelectorAll("button");
+  boutons.forEach(b => b.disabled = true);
 
-    function lectureSequence() {
-      envoyerCommande('[3]');
-      setTimeout(() => { envoyerCommande('[41]'); }, 2500);
-    }
+  fetch("https://sergebriffaerts.alwaysdata.net/commande.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "texte=" + encodeURIComponent(cmd)
+  });
 
-  
-  function toggleAide() {
-    const aide = document.getElementById("aide");
-    aide.style.display = (aide.style.display === "none") ? "block" : "none";
+  setTimeout(() => {
+    fetch("https://sergebriffaerts.alwaysdata.net/vider.php");
+    zone.innerText = "Commande envoyée et effacée.";
+    verrouCommande = false;
+    boutons.forEach(b => b.disabled = false);
+  }, 2000);
+}
+
+
+
+
+function envoyerCommandeLibre() {
+  const champ = document.getElementById("commande");
+  const texte = champ.value.trim();
+  if (texte !== "") {
+    envoyerCommande("[" + texte + "]");
   }
-
+}
 
 function envoyerServo() {
-  const angle = parseInt(document.getElementById("angleServo").value);
-  if (isNaN(angle) || angle < 0 || angle > 180) {
-    alert("Veuillez entrer un angle entre 0 et 180.");
-    return;
+  const champ = document.getElementById("angleServo");
+  const angle = champ.value.trim();
+  if (angle !== "" && !isNaN(angle)) {
+    envoyerCommande("[47/" + angle + "]");
   }
-  envoyerCommande(`[47/${angle}]`);
 }
+
 </script>
 
 <div id="listeAide" style="display: none;">
